@@ -1,24 +1,33 @@
-
 # DroneRoute
 
-### Hybrid Drone Delivery Optimization
+**Simulador modular de otimização de entregas por drones.**
 
-O DroneRoute é um projeto de desenvolvimento de um simulador de otimização de entregas por drones, utilizando algoritmos de inteligência computacional para encontrar soluções eficientes de roteamento e distribuição de entregas.
+O DroneRoute é um projeto de simulação computacional que busca estudar e desenvolver estratégias de otimização para operações de entrega utilizando drones.
 
 ## Objetivo
 
-Desenvolver um sistema modular capaz de otimizar operações de entrega por drones, considerando restrições como:
+Desenvolver um sistema modular capaz de representar operações de entrega, considerando:
 
 - Capacidade máxima de carga.
 - Autonomia energética.
-- Consumo de energia conforme o peso transportado.
+- Consumo de energia conforme distância e peso transportado.
 - Distribuição de clientes entre drones.
-- Necessidade de estações de recarga.
+- Estações de recarga.
 - Retorno ao centro de distribuição.
 
-## Algoritmos
+## Arquitetura
 
-O projeto utilizará duas meta-heurísticas principais:
+O projeto utiliza uma organização modular:
+
+- `models`: representação dos elementos do sistema.
+- `algorithms`: implementação dos algoritmos de otimização.
+- `simulation`: regras e execução das simulações.
+- `visualization`: representação gráfica dos resultados.
+- `tests`: testes automatizados.
+
+## Estratégia de otimização planejada
+
+O projeto prevê a utilização de duas meta-heurísticas:
 
 **Algoritmo Genético (AG)**
 
@@ -26,11 +35,23 @@ Responsável pela distribuição dos clientes entre os drones, utilizando popula
 
 **Otimização por Colônia de Formigas (ACO)**
 
-Responsável pela construção e otimização das rotas, utilizando feromônios e informações heurísticas.
+Responsável pela construção e otimização das sequências de visitas, utilizando feromônios e informações heurísticas.
 
 **Abordagem híbrida**
 
-Integração entre AG e ACO para combinar a distribuição de entregas com a otimização das rotas.
+Integração entre AG e ACO para combinar distribuição de entregas e otimização de rotas.
+
+Os algoritmos ainda estão em desenvolvimento.
+
+## Modelo energético inicial
+
+A primeira versão utiliza um modelo simplificado de consumo:
+
+`Consumo = distância × (consumo base + peso × fator de carga)`
+
+Os coeficientes são parâmetros ilustrativos, destinados à experimentação computacional.
+
+A distância é calculada em um plano cartesiano com coordenadas expressas em quilômetros.
 
 ## Tecnologias
 
@@ -39,15 +60,25 @@ Integração entre AG e ACO para combinar a distribuição de entregas com a oti
 - GitHub
 - Visual Studio Code
 
+## Executando
+
+Ative o ambiente virtual e execute:
+
+```bash
+python -m droneroute.main
+```
+
+Para executar os testes:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
 ## Desenvolvimento
 
-O sistema será desenvolvido de forma modular, permitindo aumentar a quantidade de drones, clientes e estações de recarga sem depender de alterações estruturais nos algoritmos.
+O sistema está sendo desenvolvido de maneira modular, permitindo ampliar a quantidade de drones, clientes e estações de recarga.
 
-A primeira versão utilizará um cenário pequeno e controlado. Futuras versões poderão incorporar coordenadas geográficas e cenários urbanos de maior escala.
-
-## Status
-
-Em desenvolvimento — estruturação inicial do projeto.
+Futuras versões poderão incorporar cenários urbanos de maior escala e coordenadas geográficas.
 
 ## Observação
 
