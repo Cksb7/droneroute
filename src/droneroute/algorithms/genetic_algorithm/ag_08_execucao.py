@@ -19,7 +19,9 @@ def executar_algoritmo_hibrido(
     distancias: list[list[float]],
     tamanho_populacao: int = 8,
     quantidade_geracoes: int = 5,
-    taxa_mutacao: float = 0.1
+    taxa_mutacao: float = 0.1,
+    quantidade_formigas_aco: int = 10,
+    quantidade_iteracoes_aco: int = 20
 ) -> tuple[
     list[int],
     float,
@@ -34,6 +36,24 @@ def executar_algoritmo_hibrido(
 
     if tamanho_populacao < 2 or quantidade_geracoes < 1:
         raise ValueError("Parametros de evolucao invalidos.")
+
+    if (
+        not isinstance(quantidade_formigas_aco, int)
+        or isinstance(quantidade_formigas_aco, bool)
+        or quantidade_formigas_aco < 1
+    ):
+        raise ValueError(
+            "A quantidade de formigas deve ser um inteiro positivo."
+        )
+
+    if (
+        not isinstance(quantidade_iteracoes_aco, int)
+        or isinstance(quantidade_iteracoes_aco, bool)
+        or quantidade_iteracoes_aco < 1
+    ):
+        raise ValueError(
+            "A quantidade de iteracoes deve ser um inteiro positivo."
+        )
 
     # 1. Cria a populacao inicial do AG.
     populacao = gerar_populacao(
@@ -63,15 +83,19 @@ def executar_algoritmo_hibrido(
                 cromossomo,
                 clientes,
                 drones,
-                distancias
+                distancias,
+                quantidade_formigas_aco=quantidade_formigas_aco,
+                quantidade_iteracoes_aco=quantidade_iteracoes_aco
             )
 
             fitnesses.append(fitness)
 
             # Guarda a melhor solucao encontrada.
             if fitness > 0 and energia < melhor_energia:
+
                 melhor_energia = energia
                 melhor_cromossomo = cromossomo.copy()
+
                 melhores_rotas = [
                     rota.copy() for rota in rotas
                 ]

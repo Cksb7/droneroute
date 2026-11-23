@@ -1,18 +1,25 @@
+
+from collections.abc import Sequence
+
+import numpy as np
+from numpy.typing import ArrayLike, NDArray
+
+
 def atualizar_feromonios(
-    feromonios: list[list[float]],
-    resultados: list[tuple[list[int], float]],
+    feromonios: ArrayLike,
+    resultados: Sequence[tuple[Sequence[int], float]],
     taxa_evaporacao: float = 0.2,
     fator_deposito: float = 100.0
-) -> list[list[float]]:
+) -> NDArray[np.float64]:
 
-    if not 0 < taxa_evaporacao < 1:
+    if not np.isfinite(taxa_evaporacao) or not 0 < taxa_evaporacao < 1:
         raise ValueError(
             "A taxa de evaporacao deve estar entre 0 e 1."
         )
 
-    if fator_deposito <= 0:
+    if not np.isfinite(fator_deposito) or fator_deposito <= 0:
         raise ValueError(
-            "O fator de deposito deve ser positivo."
+            "O fator de deposito deve ser positivo e finito."
         )
 
     if not resultados:
@@ -20,47 +27,85 @@ def atualizar_feromonios(
             "E necessario ter pelo menos uma rota."
         )
 
-    quantidade_pontos = len(feromonios)
+    try:
+        matriz = np.asarray(feromonios, dtype=np.float64)
 
-    if any(
-        len(linha) != quantidade_pontos
-        for linha in feromonios
-    ):
+    except (TypeError, ValueError) as erro:
+        raise ValueError(
+            "A matriz de feromonios deve conter valores numericos."
+        ) from erro
+
+    if matriz.ndim != 2 or matriz.shape[0] != matriz.shape[1]:
         raise ValueError(
             "A matriz de feromonios deve ser quadrada."
         )
 
-    # 1. Evaporacao: reduz o feromonio das conexoes.
-    nova_matriz = []
+    if matriz.shape[0] < 2:
+        raise ValueError(
+            "A matriz deve possuir pelo menos 2 pontos."
+        )
 
-    for origem in range(quantidade_pontos):
-        linha = []
+    if not np.isfinite(matriz).all() or np.any(matriz < 0):
+        raise ValueError(
+            "Os feromonios devem ser valores nao negativos e finitos."
+        )
 
-        for destino in range(quantidade_pontos):
+    quantidade_pontos = matriz.shape[0]
 
-            if origem == destino:
-                linha.append(0.0)
-            else:
-                valor = feromonios[origem][destino]
-                linha.append(valor * (1 - taxa_evaporacao))
+    # 1. Evaporacao: reduz o feromonio de todas as conexoes.
+    nova_matriz = matriz * (1.0 - taxa_evaporacao)
 
-        nova_matriz.append(linha)
+    # As conexoes de um ponto com ele mesmo nao recebem feromonio.
+    np.fill_diagonal(nova_matriz, 0.0)
 
-    # 2. Deposito: reforca as conexoes das rotas.
+    # 2. Deposito: reforca as conexoes utilizadas pelas formigas.
     for rota, energia_total in resultados:
 
-        if energia_total <= 0:
+        energia_total = float(energia_total)
+
+        if not np.isfinite(energia_total) or energia_total <= 0:
             raise ValueError(
-                "O consumo energetico deve ser positivo."
+                "O consumo energetico deve ser positivo e finito."
             )
 
+        indices = np.asarray(rota)
+
+        if (
+            indices.ndim != 1
+            or len(indices) < 2
+            or not np.issubdtype(indices.dtype, np.integer)
+        ):
+            raise ValueError(
+                "A rota deve conter indices inteiros validos."
+            )
+
+        indices = indices.astype(np.intp, copy=False)
+
+        if np.any(indices < 0) or np.any(indices >= quantidade_pontos):
+            raise ValueError(
+                "A rota possui indices fora dos limites da matriz."
+            )
+
+        # Calcula a quantidade de feromonio depositada pela formiga.
         deposito = fator_deposito / energia_total
 
-        for i in range(len(rota) - 1):
+        if not np.isfinite(deposito):
+            raise ValueError(
+                "O deposito de feromonio deve ser finito."
+            )
 
-            origem = rota[i]
-            destino = rota[i + 1]
+        # Identifica todas as conexoes percorridas pela rota.
+        origens = indices[:-1]
+        destinos = indices[1:]
 
-            nova_matriz[origem][destino] += deposito
+        # Adiciona o feromonio em todas as conexoes simultaneamente.
+        np.add.at(
+            nova_matriz,
+            (origens, destinos),
+            deposito
+        )
+
+    # Garante que a diagonal permaneça zerada.
+    np.fill_diagonal(nova_matriz, 0.0)
 
     return nova_matriz
