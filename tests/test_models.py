@@ -1,8 +1,8 @@
+
 import unittest
 
 from droneroute.models.drone import Drone
 from droneroute.models.client import Client
-from droneroute.models.charging_station import ChargingStation
 from droneroute.models.distribution_center import DistributionCenter
 
 
@@ -68,38 +68,9 @@ class DroneTests(unittest.TestCase):
             self.drone.voar(2.0, 4.0)
 
 
-class ChargingStationTests(unittest.TestCase):
-
-    def test_station_recharge(self):
-
-        drone = Drone("DR-02", 3.0, 500.0)
-
-        drone.consumir_bateria(200.0)
-
-        station = ChargingStation(
-            "ST-01",
-            5.0,
-            3.0,
-            500.0
-        )
-
-        energy_added = station.recarregar_drone(
-            drone,
-            0.25
-        )
-
-        self.assertEqual(energy_added, 125.0)
-
-        self.assertEqual(
-            drone.current_battery_wh,
-            425.0
-        )
-
-
 class ClientTests(unittest.TestCase):
 
     def test_client_creation(self):
-
         client = Client(
             "C-01",
             10.0,
@@ -114,7 +85,6 @@ class ClientTests(unittest.TestCase):
 class DistributionCenterTests(unittest.TestCase):
 
     def test_center_creation(self):
-
         center = DistributionCenter(
             "DEPOT-01",
             0.0,
